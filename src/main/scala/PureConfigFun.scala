@@ -19,18 +19,7 @@ object PureConfigFun {
   import pureconfig.ProductHint
   import pureconfig.error.ConfigReaderFailures
 
-  /** Supposed to fail if an unknown key is found, but causes the 2 load methods below to fail with
-    * pureconfig.error.ConfigReaderException: Cannot convert configuration to a value of class PureConfigFun. Failures are:
-  Other failures:
-    -  UnknownKey(path,None)
-    -  UnknownKey(file,None)
-    -  UnknownKey(java,None)
-    -  UnknownKey(os,None)
-    -  UnknownKey(line,None)
-    -  UnknownKey(user,None)
-    -  UnknownKey(sun,None)
-    -  UnknownKey(akka,None)
-    -  UnknownKey(awt,None)
+  /** Fail if an unknown key is found
     * @see https://github.com/melrief/pureconfig/blob/master/core/docs/override-behaviour-for-case-classes.md#unknown-keys */
   implicit val hint: ProductHint[PureConfigFun] = ProductHint[PureConfigFun](allowUnknownKeys = false)
 
