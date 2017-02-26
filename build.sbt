@@ -36,11 +36,14 @@ javacOptions ++= Seq(
   "-g:vars"
 )
 
+lazy val ammVer  = "0.8.2"
+
 libraryDependencies ++= Seq(
-  "com.github.melrief" %% "pureconfig"  % "0.6.0" withSources(),
-  //"com.github.nscala-time"   %% "nscala-time"   % "2.14.0" withSources(),
-  "org.scalatest"      %% "scalatest"   % "3.0.1" % "test" withSources(),
-  "junit"              %  "junit"       % "4.12"  % "test"
+  "com.lihaoyi"        %  "ammonite"      % ammVer  withSources() cross CrossVersion.full,
+  "com.lihaoyi"        %  "ammonite-sshd" % ammVer  withSources() cross CrossVersion.full,
+  "com.github.melrief" %% "pureconfig"    % "0.6.0" withSources(),
+  "org.scalatest"      %% "scalatest"     % "3.0.1" % "test" withSources(),
+  "junit"              %  "junit"         % "4.12"  % "test"
 )
 
 logLevel := Level.Warn
