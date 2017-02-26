@@ -1,9 +1,5 @@
 import java.nio.file.{Path, Paths}
 import PureConfigFun._
-import com.typesafe.config.{ConfigValue, ConfigValueFactory, ConfigValueType}
-import pureconfig.{CamelCase, ConfigConvert, ConfigFieldMapping}
-import pureconfig.ConfigConvert._
-import pureconfig.error.{CannotConvert, ConfigValueLocation}
 
 object PureConfigTest extends App {
   val pureConfigFun = PureConfigFun.load
@@ -16,8 +12,10 @@ object PureConfigTest2 extends App {
 }
 
 object PureConfigFun {
-  import pureconfig.ProductHint
-  import pureconfig.error.ConfigReaderFailures
+  import pureconfig.{CamelCase, ConfigConvert, ConfigFieldMapping, ProductHint}
+  import pureconfig.error.{CannotConvert, ConfigReaderFailures, ConfigValueLocation}
+  import pureconfig.ConfigConvert._
+  import com.typesafe.config.{ConfigValue, ConfigValueFactory, ConfigValueType}
 
   val defaultConsoleConfig   = ConsoleConfig()
   val defaultFeedConfig      = FeedConfig()
@@ -25,14 +23,15 @@ object PureConfigFun {
   val defaultSpeciesConfig   = SpeciesDefaults()
   val defaultSshServerConfig = SshServer()
 
+  /** Define before `load` or `loadOrThrow` methods are defined so this implicit is in scope */
   implicit val readPort = new ConfigConvert[Port] {
     override def from(config: ConfigValue): Either[ConfigReaderFailures, Port] = {
-      config.valueType() match {
+      config.valueType match {
         case ConfigValueType.NUMBER =>
-          Right(Port(config.unwrapped().asInstanceOf[Int]))
+          Right(Port(config.unwrapped.asInstanceOf[Int]))
 
-        case t =>
-          fail(CannotConvert(config.render(), "Port", s"A port should be a number, but ${ config.valueType } was found", ConfigValueLocation(config)))
+        case _ =>
+          fail(CannotConvert(config.render, "Port", s"A port should be a number, but ${ config.valueType } was found", ConfigValueLocation(config)))
       }
     }
 
@@ -51,10 +50,13 @@ object PureConfigFun {
 
   lazy val confPath: Path = new java.io.File(getClass.getResource("pure.conf").getPath).toPath
 
+  /** Be sure to define implicits such as [[ConfigConvert]] and [[ProductHint]] subtypes before this method so they are in scope */
   def load: Either[ConfigReaderFailures, PureConfigFun] = pureconfig.loadConfig[PureConfigFun](confPath, "ew")
 
+  /** Be sure to define implicits such as [[ConfigConvert]] and [[ProductHint]] subtypes before this method so they are in scope */
   def loadOrThrow: PureConfigFun = pureconfig.loadConfigOrThrow[PureConfigFun](confPath, "ew")
 
+  /** Be sure to define implicits such as [[ConfigConvert]] and [[ProductHint]] subtypes before this method so they are in scope */
   def apply: PureConfigFun = loadOrThrow
 }
 
@@ -85,9 +87,9 @@ case class SpeciesDefaults(
 
 case class SshServer(
   address: String = "localhost",
-  ammoniteHome: Path = Paths.get(System.getProperty("user.home")),
+  ammoniteHome: Path = Paths.get(System.getProperty("user.home") + "/.ammonite"),
   enabled: Boolean = true,
-  hostKeyFile: Option[Path] = None, //Some(Paths.get(System.getProperty("user.home") + ".ssh/id_rsa")),
+  hostKeyFile: Option[Path] = None, //Some(Paths.get(System.getProperty("user.home") + "/.ssh/id_rsa")),
   password: String = "",
   port: Port = Port(1101),
   userName: String = "repl"
