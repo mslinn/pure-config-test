@@ -3,8 +3,7 @@ import PureConfigFun._
 import com.typesafe.config.{ConfigValue, ConfigValueFactory, ConfigValueType}
 import pureconfig.ConfigConvert
 import pureconfig.ConfigConvert._
-import pureconfig.error.{CannotConvert, ConfigReaderFailure, ConfigReaderFailures, ConfigValueLocation}
-import scala.reflect.ClassTag
+import pureconfig.error.{CannotConvert, ConfigValueLocation}
 
 object PureConfigTest extends App {
   val pureConfigFun = PureConfigFun.load
@@ -17,8 +16,8 @@ object PureConfigTest2 extends App {
 }
 
 object PureConfigFun {
-  import pureconfig.error.ConfigReaderFailures
   import pureconfig.ProductHint
+  import pureconfig.error.ConfigReaderFailures
 
   /** Supposed to fail if an unknown key is found, but causes the 2 load methods below to fail with
     * pureconfig.error.ConfigReaderException: Cannot convert configuration to a value of class PureConfigFun. Failures are:

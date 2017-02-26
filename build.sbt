@@ -39,8 +39,6 @@ javacOptions ++= Seq(
 lazy val ammVer  = "0.8.2"
 
 libraryDependencies ++= Seq(
-  "com.lihaoyi"        %  "ammonite"      % ammVer  withSources() cross CrossVersion.full,
-  "com.lihaoyi"        %  "ammonite-sshd" % ammVer  withSources() cross CrossVersion.full,
   "com.github.melrief" %% "pureconfig"    % "0.6.0" withSources(),
   "org.scalatest"      %% "scalatest"     % "3.0.1" % "test" withSources(),
   "junit"              %  "junit"         % "4.12"  % "test"
