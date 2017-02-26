@@ -48,7 +48,7 @@ object PureConfigFun {
     fieldMapping = ConfigFieldMapping(CamelCase, CamelCase)
   )
 
-  lazy val confPath: Path = new java.io.File(getClass.getResource("pure.conf").getPath).toPath
+  lazy val confPath: Path = new java.io.File(getClass.getClassLoader.getResource("pure.conf").getPath).toPath
 
   /** Be sure to define implicits such as [[ConfigConvert]] and [[ProductHint]] subtypes before this method so they are in scope */
   def load: Either[ConfigReaderFailures, PureConfigFun] = pureconfig.loadConfig[PureConfigFun](confPath, "ew")
