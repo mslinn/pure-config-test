@@ -2,9 +2,9 @@ organization := "com.micronautics"
 
 name := "pure-config-test"
 
-version := "0.1.0"
+version := "0.1.1"
 
-scalaVersion := "2.12.1"
+scalaVersion := "2.12.4"
 
 scalacOptions ++= Seq(
   "-deprecation",
@@ -39,9 +39,9 @@ javacOptions ++= Seq(
 lazy val ammVer  = "0.8.2"
 
 libraryDependencies ++= Seq(
-  "com.github.melrief" %% "pureconfig"    % "0.6.0" withSources(),
-  "org.scalatest"      %% "scalatest"     % "3.0.1" % "test" withSources(),
-  "junit"              %  "junit"         % "4.12"  % "test"
+  "com.github.pureconfig" %% "pureconfig"    % "0.7.0" withSources(),
+  "org.scalatest"         %% "scalatest"     % "3.0.1" % Test withSources(),
+  "junit"                 %  "junit"         % "4.12"  % Test
 )
 
 logLevel := Level.Warn

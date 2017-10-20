@@ -24,14 +24,24 @@ object PureConfigFun {
   val defaultSshServerConfig = SshServer()
 
   /** Define before `load` or `loadOrThrow` methods are defined so this implicit is in scope */
-  implicit val readPort = new ConfigConvert[Port] {
+  implicit val readPort: ConfigConvert[Port] {
+    def to(port: Port): ConfigValue
+
+    def from(config: ConfigValue): Either[ConfigReaderFailures, Port]
+  } = new ConfigConvert[Port] {
     override def from(config: ConfigValue): Either[ConfigReaderFailures, Port] = {
       config.valueType match {
         case ConfigValueType.NUMBER =>
           Right(Port(config.unwrapped.asInstanceOf[Int]))
 
         case _ =>
-          fail(CannotConvert(config.render, "Port", s"A port should be a number, but ${ config.valueType } was found", ConfigValueLocation(config)))
+          fail(CannotConvert(
+            value = config.render,
+            toType = "Port",
+            because = s"A port should be a number, but ${ config.valueType } was found",
+            location = ConfigValueLocation(config),
+            path = None
+          ))
       }
     }
 
