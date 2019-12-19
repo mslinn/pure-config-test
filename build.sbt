@@ -16,9 +16,9 @@ javacOptions ++= Seq(
 )
 
 libraryDependencies ++= Seq(
-  "com.github.pureconfig" %% "pureconfig"    % "0.7.0" withSources(),
-  "org.scalatest"         %% "scalatest"     % "3.1.0" % Test withSources(),
-  "junit"                 %  "junit"         % "4.12"  % Test
+  "com.github.pureconfig" %% "pureconfig"    % "0.12.1" withSources(),
+  "org.scalatest"         %% "scalatest"     % "3.1.0"  % Test withSources(),
+  "junit"                 %  "junit"         % "4.12"   % Test
 )
 
 logLevel := Level.Warn
@@ -49,7 +49,7 @@ scalacOptions ++= Seq(
 scalacOptions in (Compile, doc) ++= baseDirectory.map {
   (bd: File) => Seq[String](
      "-sourcepath", bd.getAbsolutePath,
-     "-doc-source-url", "https://github.com/mslinn/changeMe/tree/master€{FILE_PATH}.scala"
+     "-doc-source-url", s"https://github.com/mslinn/$name/tree/master€{FILE_PATH}.scala"
   )
 }.value
 
