@@ -16,7 +16,7 @@ javacOptions ++= Seq(
 )
 
 libraryDependencies ++= Seq(
-  "com.github.pureconfig" %% "pureconfig"    % "0.8.0" withSources(), // Works: 0.7.0
+  "com.github.pureconfig" %% "pureconfig"    % "0.7.0" withSources(),
   "org.scalatest"         %% "scalatest"     % "3.1.0" % Test withSources(),
   "junit"                 %  "junit"         % "4.12"  % Test
 )
