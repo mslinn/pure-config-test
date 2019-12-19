@@ -1,32 +1,11 @@
-organization := "com.micronautics"
+cancelable := true
 
-name := "pure-config-test"
-
-version := "0.1.1"
-
-scalaVersion := "2.12.4"
-
-scalacOptions ++= Seq(
-  "-deprecation",
-  "-encoding", "UTF-8",
-  "-feature",
-  "-target:jvm-1.8",
-  "-unchecked",
-  "-Ywarn-adapted-args",
-  "-Ywarn-dead-code",
-  "-Ywarn-numeric-widen",
-  "-Ywarn-unused",
-  "-Ywarn-value-discard",
-  "-Xfuture",
-  "-Xlint"
-)
-
-scalacOptions in (Compile, doc) ++= baseDirectory.map {
-  (bd: File) => Seq[String](
-     "-sourcepath", bd.getAbsolutePath,
-     "-doc-source-url", "https://github.com/mslinn/changeMe/tree/master€{FILE_PATH}.scala"
-  )
-}.value
+// define the statements initially evaluated when entering 'console', 'console-quick', but not 'console-project'
+initialCommands in console := """import java.nio.file.{Path, Paths}
+                                |import PureConfigFun._
+                                |import pureconfig.ProductHint
+                                |import pureconfig.error.ConfigReaderFailures
+                                |""".stripMargin
 
 javacOptions ++= Seq(
   "-Xlint:deprecation",
@@ -36,11 +15,9 @@ javacOptions ++= Seq(
   "-g:vars"
 )
 
-lazy val ammVer  = "0.8.2"
-
 libraryDependencies ++= Seq(
-  "com.github.pureconfig" %% "pureconfig"    % "0.7.0" withSources(),
-  "org.scalatest"         %% "scalatest"     % "3.0.1" % Test withSources(),
+  "com.github.pureconfig" %% "pureconfig"    % "0.8.0" withSources(), // Works: 0.7.0
+  "org.scalatest"         %% "scalatest"     % "3.1.0" % Test withSources(),
   "junit"                 %  "junit"         % "4.12"  % Test
 )
 
@@ -53,13 +30,27 @@ logLevel in compile := Level.Warn
 // Level.INFO is needed to see detailed output when running tests
 logLevel in test := Level.Info
 
-// define the statements initially evaluated when entering 'console', 'console-quick', but not 'console-project'
-initialCommands in console := """import java.nio.file.{Path, Paths}
-                                |import PureConfigFun._
-                                |import pureconfig.ProductHint
-                                |import pureconfig.error.ConfigReaderFailures
-                                |""".stripMargin
+name := "pure-config-test"
 
-cancelable := true
+organization := "com.micronautics"
+
+version := "0.1.2"
+
+scalaVersion := "2.12.10"
+
+scalacOptions ++= Seq(
+  "-deprecation",
+  "-encoding", "UTF-8",
+  "-feature",
+  "-target:jvm-1.8",
+  "-unchecked"
+)
+
+scalacOptions in (Compile, doc) ++= baseDirectory.map {
+  (bd: File) => Seq[String](
+     "-sourcepath", bd.getAbsolutePath,
+     "-doc-source-url", "https://github.com/mslinn/changeMe/tree/master€{FILE_PATH}.scala"
+  )
+}.value
 
 sublimeTransitive := true
