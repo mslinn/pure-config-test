@@ -17,11 +17,11 @@ object PureConfigFun {
   import pureconfig.ConfigConvert._
   import com.typesafe.config.{ConfigValue, ConfigValueFactory, ConfigValueType}
 
-  val defaultConsoleConfig   = ConsoleConfig()
-  val defaultFeedConfig      = FeedConfig()
-  val defaultReplConfig      = ReplConfig()
-  val defaultSpeciesConfig   = SpeciesDefaults()
-  val defaultSshServerConfig = SshServer()
+  val defaultConsoleConfig: ConsoleConfig = ConsoleConfig()
+  val defaultFeedConfig: FeedConfig = FeedConfig()
+  val defaultReplConfig: ReplConfig = ReplConfig()
+  val defaultSpeciesConfig: SpeciesDefaults = SpeciesDefaults()
+  val defaultSshServerConfig: SshServer = SshServer()
 
   /** Define before `load` or `loadOrThrow` methods are defined so this implicit is in scope */
   implicit val readPort: ConfigConvert[Port] {
