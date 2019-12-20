@@ -15,6 +15,9 @@ import pureconfig.ConfigReader.Result
 // $ sbt assembly
 // $ java -cp target/scala-2.13/pure-config-test-assembly-0.1.2.jar PureConfigTest
 // Error: ConfigReaderFailures(CannotReadFile(file:/mnt/c/work/experiments/scala/pure-config-test/target/scala-2.13/pure-config-test-assembly-0.1.2.jar!/pure.conf,Some(java.io.FileNotFoundException: file:/mnt/c/work/experiments/scala/pure-config-test/target/scala-2.13/pure-config-test-assembly-0.1.2.jar!/pure.conf (No such file or directory))),List())
+// This is weird because the file is in the jar:
+// $ jar -tf /mnt/c/work/experiments/scala/pure-config-test/target/scala-2.13/pure-config-test-assembly-0.1.2.jar | grep pure.conf
+//pure.conf
 object PureConfigTest extends App {
   PureConfigFun.load match {
     case Right(right) => println(s"Success: $right")
@@ -33,6 +36,9 @@ object PureConfigTest extends App {
 // $ java -cp target/scala-2.13/pure-config-test-assembly-0.1.2.jar PureConfigTest2
 // Error: pureconfig.error.ConfigReaderException: Cannot convert configuration to a PureConfigFun. Failures are:
 //  - Unable to read file file:/mnt/c/work/experiments/scala/pure-config-test/target/scala-2.13/pure-config-test-assembly-0.1.2.jar!/pure.conf (No such file or directory).
+// This is weird because the file is in the jar:
+// $ jar -tf /mnt/c/work/experiments/scala/pure-config-test/target/scala-2.13/pure-config-test-assembly-0.1.2.jar | grep pure.conf
+//pure.conf
 object PureConfigTest2 extends App {
   try {
     val pureConfigFun: PureConfigFun = PureConfigFun.loadOrThrow
@@ -71,6 +77,7 @@ object PureConfigFun {
 
     override def to(host: Host): ConfigValue = ConfigValueFactory.fromAnyRef(host.value)
 
+    // New required method for PureConfig 0.12.1
     override def from(cur: ConfigCursor): Result[Host] =
       if (cur.isUndefined) cur.asString.map(Host) else {
         val s = cur.value.render(ConfigRenderOptions.concise)
