@@ -8,8 +8,11 @@ import pureconfig.error._
 import com.typesafe.config.ConfigValueType._
 import pureconfig.ConfigReader.Result
 
-// FIXME this works when run from IDEA, but when 'sbt run' yieds this error:
+// FIXME this works when run from IDEA, but 'sbt run' yieds this error:
 // Error: ConfigReaderFailures(CannotReadFile(file:/tmp/sbt_60a15cbd/job-1/target/2d0db0fc/7e27f317/pure-config-test_2.12-0.1.2.jar!/pure.conf,Some(java.io.FileNotFoundException: file:/tmp/sbt_60a15cbd/job-1/target/2d0db0fc/7e27f317/pure-config-test_2.12-0.1.2.jar!/pure.conf (No such file or directory))),List())
+//
+// Also, building an assembly and running it gives a similar error
+// 
 object PureConfigTest extends App {
   PureConfigFun.load match {
     case Right(right) => println(s"Success: $right")
