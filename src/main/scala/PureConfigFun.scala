@@ -66,7 +66,8 @@ object PureConfigFun {
     // New required method for PureConfig 0.12.1
     override def from(cur: ConfigCursor): Result[Host] =
       if (cur.isUndefined) cur.asString.map(Host) else {
-        val s = cur.value.render(ConfigRenderOptions.concise)
+        val s = cur.value.unwrapped.toString
+//        val Right(x) = cur.scopeFailure(catchReadError(_.toString)(implicitly)(s))
         cur.scopeFailure(catchReadError(_.toString)(implicitly)(s)).map(Host)
       }
   }
@@ -152,7 +153,7 @@ case class ConsoleConfig(enabled: Boolean = true)
 case class HttpConfig(host: Host = Host("0.0.0.0"), port: Port = Port(5000))
 
 case class Host(value: String) {
-  override def toString: String = value.toString
+  override def toString: String = value
 }
 
 case class Port(value: Int)
