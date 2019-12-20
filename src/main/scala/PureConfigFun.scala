@@ -9,13 +9,16 @@ import com.typesafe.config.ConfigValueType._
 import pureconfig.ConfigReader.Result
 
 object PureConfigTest extends App {
-  val pureConfigFun = PureConfigFun.load
-  println(pureConfigFun)
+  PureConfigFun.load match {
+    case Right(right) => println(right)
+    case Left(left) => Console.err.println(left)
+  }
 }
 
 object PureConfigTest2 extends App {
-  val pureConfigFun = PureConfigFun.loadOrThrow
-  println(pureConfigFun)
+  try PureConfigFun.loadOrThrow catch {
+    case e: Exception => Console.err.println(e)
+  }
 }
 
 object PureConfigFun {
@@ -81,8 +84,11 @@ object PureConfigFun {
   lazy val confPath: Path = new java.io.File(getClass.getClassLoader.getResource("pure.conf").getPath).toPath
 
   /** Be sure to define implicits such as [[ConfigConvert]] and [[ProductHint]] subtypes before this method so they are in scope */
-  // TODO how to rewrite this without invoking the deprecated loadConfig method?
+  // FIXME Both load methods need to access a jar file in a directory like /tmp/sbt_d5726c6d/target/f730e7e4/32bd50e6/pureconfig-core_2.12-0.12.1.jar
+  // However, the load methods look for the jar file is in a different directory: /tmp/sbt_fd8d7e44/job-1/target/cc973517/62352470/
+
   // FIXME eft(ConfigReaderFailures(CannotReadFile(file:/tmp/sbt_fd8d7e44/job-1/target/cc973517/62352470/pure-config-test_2.12-0.1.2.jar!/pure.conf,Some(java.io.FileNotFoundException: file:/tmp/sbt_fd8d7e44/job-1/target/cc973517/62352470/pure-config-test_2.12-0.1.2.jar!/pure.conf (No such file or directory))),List()))
+  // TODO how to rewrite this without invoking the deprecated loadConfig method?
   def load: Either[ConfigReaderFailures, PureConfigFun] = pureconfig.loadConfig[PureConfigFun](confPath, "ew")
 
   /** Be sure to define implicits such as [[ConfigConvert]] and [[ProductHint]] subtypes before this method so they are in scope */
