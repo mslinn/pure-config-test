@@ -132,23 +132,20 @@ object PureConfigFun {
     fieldMapping = ConfigFieldMapping(CamelCase, CamelCase)
   )
 
-  lazy val confPath: Path = try { // First look on file system for pure.conf
-    Paths.get(getClass.getClassLoader.getResource("pure.conf").getPath)
-  } catch {
-    case _: Exception => try { // Next look inside assembly
-      Paths.get(getClass.getResource("pure.conf").toURI)
-    } catch { // Now give up
-      case e: Exception => sys.error(e.getMessage)
-    }
-  }
+  // This will unfortunately load "pure.conf" from the jar and the file system if both files if both are present.
+  // Also, this won't report an error about a missing file if both are missing.
+  // Instead it'll complain about missing config keys.
+  lazy val confSource: ConfigSource =
+    ConfigSource
+      .resources("pure.conf").optional
+      .withFallback(ConfigSource.file("pure.conf").optional)
+      .at("ew")
 
   /** Be sure to define implicits such as [[ConfigConvert]] and [[ProductHint]] subtypes before this method so they are in scope */
-  def load: Either[ConfigReaderFailures, PureConfigFun] =
-    ConfigSource.default(ConfigSource.file(confPath)).at("ew").load[PureConfigFun]
+  def load: Either[ConfigReaderFailures, PureConfigFun] = confSource.load[PureConfigFun]
 
   /** Be sure to define implicits such as [[ConfigConvert]] and [[ProductHint]] subtypes before this method so they are in scope */
-  def loadOrThrow: PureConfigFun =
-    ConfigSource.default(ConfigSource.file(confPath)).at("ew").loadOrThrow[PureConfigFun]
+  def loadOrThrow: PureConfigFun = confSource.loadOrThrow[PureConfigFun]
 
   /** Be sure to define implicits such as [[ConfigConvert]] and [[ProductHint]] subtypes before this method so they are in scope */
   def apply: PureConfigFun = loadOrThrow
