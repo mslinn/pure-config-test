@@ -3,8 +3,13 @@ cancelable := true
 // define the statements initially evaluated when entering 'console', 'console-quick', but not 'console-project'
 initialCommands in console := """import java.nio.file.{Path, Paths}
                                 |import PureConfigFun._
-                                |import pureconfig.ProductHint
-                                |import pureconfig.error.ConfigReaderFailures
+                                |import com.typesafe.config.ConfigRenderOptions
+                                |import pureconfig._
+                                |import pureconfig.generic.auto._
+                                |import pureconfig.generic.ProductHint
+                                |import pureconfig.error._
+                                |import com.typesafe.config.ConfigValueType._
+                                |import pureconfig.ConfigReader.Result
                                 |""".stripMargin
 
 javacOptions ++= Seq(
