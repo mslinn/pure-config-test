@@ -26,6 +26,7 @@ object PureConfigFun {
 
   val defaultConsoleConfig: ConsoleConfig = ConsoleConfig()
   val defaultFeedConfig: FeedConfig = FeedConfig()
+  val defaultHttpConfig: HttpConfig = HttpConfig()
   val defaultReplConfig: ReplConfig = ReplConfig()
   val defaultSpeciesConfig: SpeciesDefaults = SpeciesDefaults()
   val defaultSshServerConfig: SshServer = SshServer()
@@ -81,6 +82,7 @@ object PureConfigFun {
 
   /** Be sure to define implicits such as [[ConfigConvert]] and [[ProductHint]] subtypes before this method so they are in scope */
   // TODO how to rewrite this without invoking the deprecated loadConfig method?
+  // FIXME eft(ConfigReaderFailures(CannotReadFile(file:/tmp/sbt_fd8d7e44/job-1/target/cc973517/62352470/pure-config-test_2.12-0.1.2.jar!/pure.conf,Some(java.io.FileNotFoundException: file:/tmp/sbt_fd8d7e44/job-1/target/cc973517/62352470/pure-config-test_2.12-0.1.2.jar!/pure.conf (No such file or directory))),List()))
   def load: Either[ConfigReaderFailures, PureConfigFun] = pureconfig.loadConfig[PureConfigFun](confPath, "ew")
 
   /** Be sure to define implicits such as [[ConfigConvert]] and [[ProductHint]] subtypes before this method so they are in scope */
@@ -97,6 +99,7 @@ object PureConfigFun {
 case class PureConfigFun(
   console: ConsoleConfig           = defaultConsoleConfig,
   feed: FeedConfig                 = defaultFeedConfig,
+  http: HttpConfig                 = defaultHttpConfig,
   repl: ReplConfig                 = defaultReplConfig,
   speciesDefaults: SpeciesDefaults = defaultSpeciesConfig,
   sshServer: SshServer             = defaultSshServerConfig
@@ -105,6 +108,12 @@ case class PureConfigFun(
 case class FeedConfig(port: Port = Port(1100))
 
 case class ConsoleConfig(enabled: Boolean = true) extends AnyVal
+
+case class HttpConfig(host: Host = Host("0.0.0.0"), port: Port = Port(5000))
+
+case class Host(value: String) extends AnyVal {
+  override def toString: String = value.toString
+}
 
 case class Port(value: Int) extends AnyVal
 
