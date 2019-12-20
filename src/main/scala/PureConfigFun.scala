@@ -14,6 +14,8 @@ import pureconfig.ConfigReader.Result
 object PureConfigTest extends App {
   PureConfigFun.load match {
     case Right(right) => println(s"Success: $right")
+      println(s"host = ${ right.http.host }") // FIXME host has embedded double quotes
+
     case Left(left) =>
       Console.err.println(s"Error: $left")
   }
@@ -26,6 +28,7 @@ object PureConfigTest2 extends App {
   try {
     val pureConfigFun: PureConfigFun = PureConfigFun.loadOrThrow
     Console.err.println(s"Success: $pureConfigFun")
+    println(s"host = ${ pureConfigFun.http.host }")
   } catch {
     case e: Exception => Console.err.println(s"Error: $e")
   }
@@ -69,11 +72,7 @@ object PureConfigFun {
   }
 
   /** Defined before `load` or `loadOrThrow` methods are defined so this implicit is in scope */
-  implicit val readPort: ConfigConvert[Port] {
-    def to(port: Port): ConfigValue
-
-    def from(config: ConfigValue): Either[ConfigReaderFailures, Port]
-  } = new ConfigConvert[Port] {
+  implicit val readPort: ConfigConvert[Port] = new ConfigConvert[Port] {
     override def from(config: ConfigValue): Either[ConfigReaderFailures, Port] = {
       config.valueType match {
         case ConfigValueType.NUMBER =>
@@ -115,13 +114,16 @@ object PureConfigFun {
     fieldMapping = ConfigFieldMapping(CamelCase, CamelCase)
   )
 
-  // This will unfortunately load "pure.conf" from the jar and the file system if both files if both are present.
-  // Also, this won't report an error about a missing file if both are missing; instead it'll complain about missing
-  // config keys.
-  lazy val confSource: ConfigSource =
+  // This won't report an error about a missing file; instead it'll complain about missing config keys.
+  lazy val confSource: ConfigSource ={
+    val x = loadFrom("pure.conf") // I can see that host has embedded double quotes
+    x
+  }
+
+  def loadFrom(confFileName: String): ConfigSource =
     ConfigSource
-      .resources("pure.conf")
-      .withFallback(ConfigSource.file("pure.conf").optional)
+      .resources(confFileName)
+      .withFallback(ConfigSource.file(confFileName).optional)
       .at("ew")
 
   /** Be sure to define implicits such as [[ConfigConvert]] and [[ProductHint]] subtypes before this method so they are in scope */
