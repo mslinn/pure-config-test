@@ -133,11 +133,11 @@ object PureConfigFun {
   )
 
   // This will unfortunately load "pure.conf" from the jar and the file system if both files if both are present.
-  // Also, this won't report an error about a missing file if both are missing.
-  // Instead it'll complain about missing config keys.
+  // Also, this won't report an error about a missing file if both are missing; instead it'll complain about missing
+  // config keys.
   lazy val confSource: ConfigSource =
     ConfigSource
-      .resources("pure.conf").optional
+      .resources("pure.conf")
       .withFallback(ConfigSource.file("pure.conf").optional)
       .at("ew")
 
