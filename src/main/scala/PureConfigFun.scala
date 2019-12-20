@@ -10,14 +10,18 @@ import pureconfig.ConfigReader.Result
 
 object PureConfigTest extends App {
   PureConfigFun.load match {
-    case Right(right) => println(right)
-    case Left(left) => Console.err.println(left)
+    case Right(right) => println(s"Success: $right")
+    case Left(left) =>
+      Console.err.println(s"Error: $left")
   }
 }
 
 object PureConfigTest2 extends App {
-  try PureConfigFun.loadOrThrow catch {
-    case e: Exception => Console.err.println(e)
+  try {
+    val pureConfigFun: PureConfigFun = PureConfigFun.loadOrThrow
+    Console.err.println(s"Success: $pureConfigFun")
+  } catch {
+    case e: Exception => Console.err.println(s"Error: $e")
   }
 }
 
@@ -34,7 +38,30 @@ object PureConfigFun {
   val defaultSpeciesConfig: SpeciesDefaults = SpeciesDefaults()
   val defaultSshServerConfig: SshServer = SshServer()
 
-  /** Define before `load` or `loadOrThrow` methods are defined so this implicit is in scope */
+  /** Defined before `load` or `loadOrThrow` methods are defined so this implicit is in scope */
+  implicit lazy val readHost: ConfigConvert[Host] = new ConfigConvert[Host] {
+    override def from(config: ConfigValue): Either[ConfigReaderFailures, Host] = {
+      config.valueType match {
+        case ConfigValueType.STRING =>
+          Right(Host(config.unwrapped.asInstanceOf[String]))
+
+        case _ =>
+          val wrongType: WrongType = WrongType(config.valueType, Set(ConfigValueType.STRING))
+          val convertFailure: ConvertFailure = ConvertFailure(wrongType, ConfigCursor(config, List(ConfigValueLocation(config).toString)))
+          Left(ConfigReaderFailures(convertFailure))
+      }
+    }
+
+    override def to(host: Host): ConfigValue = ConfigValueFactory.fromAnyRef(host.value)
+
+    override def from(cur: ConfigCursor): Result[Host] =
+      if (cur.isUndefined) cur.asString.map(Host) else {
+        val s = cur.value.render(ConfigRenderOptions.concise)
+        cur.scopeFailure(catchReadError(_.toString)(implicitly)(s)).map(Host)
+      }
+  }
+
+  /** Defined before `load` or `loadOrThrow` methods are defined so this implicit is in scope */
   implicit val readPort: ConfigConvert[Port] {
     def to(port: Port): ConfigValue
 
@@ -84,18 +111,11 @@ object PureConfigFun {
   lazy val confPath: Path = new java.io.File(getClass.getClassLoader.getResource("pure.conf").getPath).toPath
 
   /** Be sure to define implicits such as [[ConfigConvert]] and [[ProductHint]] subtypes before this method so they are in scope */
-  // FIXME Both load methods need to access a jar file in a directory like /tmp/sbt_d5726c6d/target/f730e7e4/32bd50e6/pureconfig-core_2.12-0.12.1.jar
-  // However, the load methods look for the jar file is in a different directory: /tmp/sbt_fd8d7e44/job-1/target/cc973517/62352470/
-
-  // FIXME eft(ConfigReaderFailures(CannotReadFile(file:/tmp/sbt_fd8d7e44/job-1/target/cc973517/62352470/pure-config-test_2.12-0.1.2.jar!/pure.conf,Some(java.io.FileNotFoundException: file:/tmp/sbt_fd8d7e44/job-1/target/cc973517/62352470/pure-config-test_2.12-0.1.2.jar!/pure.conf (No such file or directory))),List()))
   // TODO how to rewrite this without invoking the deprecated loadConfig method?
   def load: Either[ConfigReaderFailures, PureConfigFun] = pureconfig.loadConfig[PureConfigFun](confPath, "ew")
 
   /** Be sure to define implicits such as [[ConfigConvert]] and [[ProductHint]] subtypes before this method so they are in scope */
   // TODO how to rewrite this without invoking the deprecated loadConfigOrThrow method?
-  // FIXME this worked with PureConfig 0.7.0, but fails on 0.12.1 with:
-  // [error] pureconfig.error.ConfigReaderException: Cannot convert configuration to a PureConfigFun. Failures are:
-  //[error]   - Unable to read file file:/tmp/sbt_9da3b7/job-2/target/2d0db0fc/821842a3/pure-config-test_2.12-0.1.2.jar!/pure.conf (No such file or directory).
   def loadOrThrow: PureConfigFun = pureconfig.loadConfigOrThrow[PureConfigFun](confPath, "ew")
 
   /** Be sure to define implicits such as [[ConfigConvert]] and [[ProductHint]] subtypes before this method so they are in scope */
@@ -113,19 +133,19 @@ case class PureConfigFun(
 
 case class FeedConfig(port: Port = Port(1100))
 
-case class ConsoleConfig(enabled: Boolean = true) extends AnyVal
+case class ConsoleConfig(enabled: Boolean = true)
 
 case class HttpConfig(host: Host = Host("0.0.0.0"), port: Port = Port(5000))
 
-case class Host(value: String) extends AnyVal {
+case class Host(value: String) {
   override def toString: String = value.toString
 }
 
-case class Port(value: Int) extends AnyVal
+case class Port(value: Int)
 
 case class ReplConfig(
   home: Path = Paths.get(System.getProperty("user.home"))
-) extends AnyVal
+)
 
 case class SpeciesDefaults(
   attributeMinimum: Int = 0,
