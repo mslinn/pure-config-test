@@ -8,13 +8,13 @@ import pureconfig.error._
 import com.typesafe.config.ConfigValueType._
 import pureconfig.ConfigReader.Result
 
-// FIXME this works when run from IDEA, but 'sbt run' yields this error:
+// FIXME this works when run from IDEA, but 'sbt runMain PureConfigTest' yields this error:
 // Error: ConfigReaderFailures(CannotReadFile(file:/tmp/sbt_60a15cbd/job-1/target/2d0db0fc/7e27f317/pure-config-test_2.13-0.1.2.jar!/pure.conf,Some(java.io.FileNotFoundException: file:/tmp/sbt_60a15cbd/job-1/target/2d0db0fc/7e27f317/pure-config-test_2.12-0.1.2.jar!/pure.conf (No such file or directory))),List())
 //
 // Also, building an assembly and running it gives a similar error:
 // $ sbt assembly
 // $ java -cp target/scala-2.13/pure-config-test-assembly-0.1.2.jar PureConfigTest
-//Error: ConfigReaderFailures(CannotReadFile(file:/mnt/c/work/experiments/scala/pure-config-test/target/scala-2.13/pure-config-test-assembly-0.1.2.jar!/pure.conf,Some(java.io.FileNotFoundException: file:/mnt/c/work/experiments/scala/pure-config-test/target/scala-2.12/pure-config-test-assembly-0.1.2.jar!/pure.conf (No such file or directory))),List())
+// Error: ConfigReaderFailures(CannotReadFile(file:/mnt/c/work/experiments/scala/pure-config-test/target/scala-2.13/pure-config-test-assembly-0.1.2.jar!/pure.conf,Some(java.io.FileNotFoundException: file:/mnt/c/work/experiments/scala/pure-config-test/target/scala-2.13/pure-config-test-assembly-0.1.2.jar!/pure.conf (No such file or directory))),List())
 object PureConfigTest extends App {
   PureConfigFun.load match {
     case Right(right) => println(s"Success: $right")
@@ -23,14 +23,15 @@ object PureConfigTest extends App {
   }
 }
 
-// FIXME this works when run from IDEA, but when 'sbt run' yields this error:
+// FIXME this works when run from IDEA, but 'sbt runMain PureConfigTest2' yields this error:
+// Error: ConfigReaderFailures(CannotReadFile(file:/tmp/sbt_522e3bb2/job-3/target/c8244565/94a30183/pure-config-test_2.13-0.1.2.jar!/pure.conf,Some(java.io.FileNotFoundException: file:/tmp/sbt_522e3bb2/job-3/target/c8244565/94a30183/pure-config-test_2.13-0.1.2.jar!/pure.conf (No such file or directory))),List())
 // Error: pureconfig.error.ConfigReaderException: Cannot convert configuration to a PureConfigFun. Failures are:
 //  - Unable to read file file:/tmp/sbt_522e3bb2/job-1/target/2d0db0fc/49472053/pure-config-test_2.13-0.1.2.jar!/pure.conf (No such file or directory).
 //
 // Also, building an assembly and running it gives a similar error:
 // $ sbt assembly
 // $ java -cp target/scala-2.13/pure-config-test-assembly-0.1.2.jar PureConfigTest2
-//Error: pureconfig.error.ConfigReaderException: Cannot convert configuration to a PureConfigFun. Failures are:
+// Error: pureconfig.error.ConfigReaderException: Cannot convert configuration to a PureConfigFun. Failures are:
 //  - Unable to read file file:/mnt/c/work/experiments/scala/pure-config-test/target/scala-2.13/pure-config-test-assembly-0.1.2.jar!/pure.conf (No such file or directory).
 object PureConfigTest2 extends App {
   try {
@@ -124,15 +125,23 @@ object PureConfigFun {
     fieldMapping = ConfigFieldMapping(CamelCase, CamelCase)
   )
 
-  lazy val confPath: Path = new java.io.File(getClass.getClassLoader.getResource("pure.conf").getPath).toPath
+  lazy val confPath: Path = try { // First look on file system for pure.conf
+    Paths.get(getClass.getClassLoader.getResource("pure.conf").getPath)
+  } catch {
+    case _: Exception => try { // Next look inside assembly
+      Paths.get(getClass.getResource("pure.conf").toURI)
+    } catch { // Now give up
+      case e: Exception => sys.error(e.getMessage)
+    }
+  }
 
   /** Be sure to define implicits such as [[ConfigConvert]] and [[ProductHint]] subtypes before this method so they are in scope */
-  // TODO how to rewrite this without invoking the deprecated loadConfig method?
-  def load: Either[ConfigReaderFailures, PureConfigFun] = pureconfig.loadConfig[PureConfigFun](confPath, "ew")
+  def load: Either[ConfigReaderFailures, PureConfigFun] =
+    ConfigSource.default(ConfigSource.file(confPath)).at("ew").load[PureConfigFun]
 
   /** Be sure to define implicits such as [[ConfigConvert]] and [[ProductHint]] subtypes before this method so they are in scope */
-  // TODO how to rewrite this without invoking the deprecated loadConfigOrThrow method?
-  def loadOrThrow: PureConfigFun = pureconfig.loadConfigOrThrow[PureConfigFun](confPath, "ew")
+  def loadOrThrow: PureConfigFun =
+    ConfigSource.default(ConfigSource.file(confPath)).at("ew").loadOrThrow[PureConfigFun]
 
   /** Be sure to define implicits such as [[ConfigConvert]] and [[ProductHint]] subtypes before this method so they are in scope */
   def apply: PureConfigFun = loadOrThrow
